@@ -22,6 +22,12 @@ from django.db import transaction
 
 from planner.paginations import CustomPagination
 
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+from authentication.permissions import IsAdmin,IsCoordinator,IsDeveloper
+
+from rest_framework.permissions import IsAuthenticated
+
 class ProjectListCreateView(ListCreateAPIView):
 
     pagination_class = CustomPagination
@@ -29,6 +35,24 @@ class ProjectListCreateView(ListCreateAPIView):
     queryset = Project.objects.filter(active_status = True)
 
     serializer_class = ProjectSerializer
+
+    permission_classes = [JWTAuthentication]
+
+    http_method_names = ['get','post']
+
+    def get_permissions(self):
+
+        permissions = []
+
+        if self.request.method in ['POST']:
+
+            permissions = [IsAdmin]
+
+        else:
+
+            permissions=[IsAuthenticated]
+
+        return [permissions() for permissions in permissions]
 
 
 class ProjectsRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
@@ -38,6 +62,24 @@ class ProjectsRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = Project.objects.filter(active_status = True)
     
     serializer_class = ProjectSerializer
+
+    permission_classes = [JWTAuthentication]
+
+    http_method_names = ['get','patch','delete']
+
+    def get_permissions(self):
+
+        permissions = []
+
+        if self.request.method in ['PATCH','DELETE']:
+
+            permissions = [IsAdmin]
+
+        else:
+
+            permissions=[IsAuthenticated]
+
+        return [permissions() for permissions in permissions]
 
     def perform_destroy(self, instance):
 
@@ -53,6 +95,24 @@ class AssignedProjectListCreateView(ListCreateAPIView):
 
     serializer_class = AssignedProjectSerializer
 
+    permission_classes = [JWTAuthentication]
+
+    http_method_names = ['get','post']
+
+    def get_permissions(self):
+
+        permissions = []
+
+        if self.request.method in ['POST']:
+
+            permissions = [IsAdmin]
+
+        else:
+
+            permissions=[IsAuthenticated]
+
+        return [permissions() for permissions in permissions]
+
 
 class AssignedProjectsRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
 
@@ -61,6 +121,24 @@ class AssignedProjectsRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = AssignedProject.objects.filter(active_status = True).select_related('project','coordinator').prefetch_related('developers')
 
     serializer_class = AssignedProjectSerializer
+
+    permission_classes = [JWTAuthentication]
+
+    http_method_names = ['get','post','patch','delete']
+
+    def get_permissions(self):
+
+        permissions = []
+
+        if self.request.method in ['PATCH','DELETE']:
+
+            permissions = [IsAdmin]
+
+        else:
+
+            permissions=[IsAuthenticated]
+
+        return [permissions() for permissions in permissions]
 
     def perform_destroy(self, instance):
 
@@ -86,6 +164,24 @@ class TaskListCreateView(ListCreateAPIView):
 
     serializer_class = TaskSerializer
 
+    permission_classes = [JWTAuthentication]
+
+    http_method_names = ['get','post']
+
+    def get_permissions(self):
+
+        permissions = []
+
+        if self.request.method in ['POST']:
+
+            permissions = [IsCoordinator]
+
+        else:
+
+            permissions=[IsAuthenticated]
+
+        return [permissions() for permissions in permissions]
+
 
 class TaskRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
 
@@ -94,6 +190,24 @@ class TaskRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.filter(active_status=True).select_related('assigned_project', 'assigned_to')
 
     serializer_class = TaskSerializer
+
+    permission_classes = [JWTAuthentication]
+
+    http_method_names = ['get','patch','delete']
+
+    def get_permissions(self):
+
+        permissions = []
+
+        if self.request.method in ['PATCH','DELETE']:
+
+            permissions = [IsCoordinator]
+
+        else:
+
+            permissions=[IsAuthenticated]
+
+        return [permissions() for permissions in permissions]
 
     def perform_destroy(self, instance):
 
